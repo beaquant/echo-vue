@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/beaquant/echo-vue/config"
+	"github.com/beaquant/echo-vue/controllers"
 	"github.com/labstack/echo"
-	"github.com/mattn/go-vue-example/config"
-	"github.com/mattn/go-vue-example/controllers"
 )
 
 func getPort() string {

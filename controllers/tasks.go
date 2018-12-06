@@ -1,10 +1,10 @@
 package controllers
 
 import (
+	"github.com/beaquant/echo-vue/helpers"
+	"github.com/beaquant/echo-vue/models"
 	"github.com/globalsign/mgo/bson"
 	"github.com/labstack/echo"
-	"github.com/mattn/go-vue-example/helpers"
-	"github.com/mattn/go-vue-example/models"
 )
 
 var (

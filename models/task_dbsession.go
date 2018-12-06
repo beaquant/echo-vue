@@ -1,9 +1,9 @@
 package models
 
 import (
+	"github.com/beaquant/echo-vue/config"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/mattn/go-vue-example/config"
 )
 
 var (

@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/beaquant/echo-vue/helpers"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/mattn/go-vue-example/helpers"
 )
 
 var (

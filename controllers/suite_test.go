@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/beaquant/echo-vue/controllers"
 	"github.com/labstack/echo"
-	"github.com/mattn/go-vue-example/controllers"
 
 	. "gopkg.in/check.v1"
 )
