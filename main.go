@@ -3,8 +3,11 @@ package main
 import (
 	"os"
 
+	"github.com/beaquant/echo-vue/api"
 	"github.com/beaquant/echo-vue/config"
 	"github.com/beaquant/echo-vue/controllers"
+	"github.com/beaquant/echo-vue/models"
+	"github.com/beaquant/echo-vue/routes"
 	"github.com/labstack/echo"
 )
 
@@ -19,12 +22,12 @@ func getPort() string {
 
 func main() {
 	e := echo.New()
+	db := models.NewSqliteDB("data.db")
+	api := api.NewAPI(db)
+	routes.NewRoutes(api, e)
 
 	config.Setup(e)
 	controllers.Setup(e.Router())
-
-	e.File("/", "index.html")
-	e.Static("/static", "static")
 
 	err := e.Start(":" + getPort())
 	if err != nil {

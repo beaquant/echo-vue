@@ -16,13 +16,11 @@ var (
 )
 
 // DefaultDBName is the default name for the database. Defaults to <app-name>-<environment>
-var DefaultDBName string
 
 func Setup(e *echo.Echo) {
 	if Environment == "" {
 		Environment = "development"
 	}
-	DefaultDBName = dbPrefix + "-" + Environment
 
 	if Environment == "production" {
 		tmpdir := filepath.Join(os.TempDir(), "go-vue-example")
