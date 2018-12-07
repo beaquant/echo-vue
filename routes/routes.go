@@ -5,6 +5,7 @@ import (
 
 	"github.com/beaquant/echo-vue/api"
 	"github.com/beaquant/echo-vue/auth"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/labstack/echo"
 	"github.com/urfave/negroni"
@@ -53,4 +54,11 @@ func NewRoutes(api *api.API, e *echo.Echo) {
 	//	negroni.Wrap(http.HandlerFunc(api.SecretQuote)),
 	//))
 
+}
+
+func restricted(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+	return c.String(http.StatusOK, "Welcome "+name+"!")
 }
