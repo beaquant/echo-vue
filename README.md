@@ -3,7 +3,7 @@
 Example App using Go, Vue.js, Element, Axios
 
 ## Come From
-it's combined from [go-vue-example](https://github.com/mattn/go-vue-example} and [go-vue-starter](https://github.com/beaquant/go-vue-starter)
+it's combined from [go-vue-example](https://github.com/mattn/go-vue-example) and [go-vue-starter](https://github.com/beaquant/go-vue-starter)
 
 
 ## Usage

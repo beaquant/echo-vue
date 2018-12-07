@@ -9,6 +9,7 @@ import (
 	"github.com/beaquant/echo-vue/models"
 	"github.com/beaquant/echo-vue/routes"
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 func getPort() string {
@@ -25,6 +26,8 @@ func main() {
 	db := models.NewSqliteDB("data.db")
 	api := api.NewAPI(db)
 	routes.NewRoutes(api, e)
+	//e.Use(middleware.Logger())
+	//e.Use(middleware.Recover())
 
 	config.Setup(e)
 	controllers.Setup(e.Router())

@@ -4,17 +4,26 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"errors"
 	"github.com/beaquant/echo-vue/auth"
 	"github.com/beaquant/echo-vue/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	"gopkg.in/go-playground/validator.v8"
 	"time"
 )
 
 // UserJSON - json data expected for login/signup
 type UserJSON struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"name" validate:"required"`
+	Password string `json:"email" validate:"required,email"`
+}
+type CustomValidator struct {
+	Validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.Validator.Struct(i)
 }
 
 // UserSignup -
@@ -44,31 +53,29 @@ func (api *API) UserSignup(c echo.Context) error {
 
 // UserLogin -
 func (api *API) UserLogin(c echo.Context) error {
+	u := new(UserJSON)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
 
-	//decoder := json.NewDecoder(req.Body)
-	//jsondata := UserJSON{}
-	//err := decoder.Decode(&jsondata)
-	//
-	//if err != nil || jsondata.Username == "" || jsondata.Password == "" {
-	//	http.Error(w, "Missing username or password", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//user := api.users.FindUser(jsondata.Username)
-	//if user.Username == "" {
-	//	http.Error(w, "username not found", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//if !api.users.CheckPassword(user.Password, jsondata.Password) {
-	//	http.Error(w, "bad password", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//jsontoken := auth.GetJSONToken(user)
-	//
-	//w.Header().Set("Content-Type", "application/json")
-	//w.Write([]byte(jsontoken))
+	if err := c.Validate(u); err != nil {
+		return err
+	}
+
+	if u.Password == "" || u.Username == "" {
+		return c.JSON(http.StatusBadRequest, u)
+	}
+	user := api.users.FindUser(u.Username)
+	if user.Username == "" {
+		return c.JSON(http.StatusBadRequest, errors.New("username not found"))
+	}
+
+	if !api.users.CheckPassword(user.Password, u.Password) {
+		return c.JSON(http.StatusBadRequest, errors.New("bad password"))
+	}
+
+	jsontoken := auth.GetJSONToken(user)
+	return c.JSON(http.StatusOK, jsontoken)
 
 }
 func login(c echo.Context) error {

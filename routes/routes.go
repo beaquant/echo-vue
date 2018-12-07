@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/labstack/echo"
 	"github.com/urfave/negroni"
+	"gopkg.in/go-playground/validator.v8"
 )
 
 // NewRoutes builds the routes for the api
@@ -36,6 +37,8 @@ func NewRoutes(api *api.API, e *echo.Echo) {
 	//e.GET("/users/:id", getUser)
 	//e.PUT("/users/:id", updateUser)
 	//e.DELETE("/users/:id", deleteUser)
+	e.Validator = &api.CustomValidator{Validator: validator.New()}
+
 	// users
 	e.POST("/api/users/signup", api.UserSignup)
 	e.POST("/api/users/login", api.UserLogin)
