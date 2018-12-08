@@ -11,13 +11,9 @@ import (
 // NewRoutes builds the routes for the api
 func NewRoutes(a *api.API, e *echo.Echo) {
 
-	// client static files
-	//e.File("/", "index.html")
-	//e.Static("/static", "static")
-
-	// api
-
+	// Validator
 	e.Validator = &api.CustomValidator{Validator: validator.New()}
+	// api
 
 	// users
 	e.POST("/api/user/signup", a.UserSignup)
@@ -27,8 +23,6 @@ func NewRoutes(a *api.API, e *echo.Echo) {
 	r.Use(middleware.JWT(auth.GetSigningKey()))
 	r.GET("", a.UserInfo)
 
-	//e.GET("/api/user/info", a.UserInfo)
-	//e.GET("/api/user/random", a.SecretQuote)
 	rr := e.Group("/api/quote/protected/random")
 	rr.Use(middleware.JWT(auth.GetSigningKey()))
 	rr.GET("", a.SecretQuote)
