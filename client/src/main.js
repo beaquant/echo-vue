@@ -56,6 +56,12 @@ const router = new VueRouter({
       beforeEnter: requireAuth
     },
     {
+      path: '/klinesquote',
+      name: 'klinesquote',
+      component: KlinesQuote,
+      beforeEnter: requireAuth
+    },
+    {
       path: '/userinfo',
       name: 'userinfo',
       component: UserInfo,
