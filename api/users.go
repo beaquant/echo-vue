@@ -1,23 +1,23 @@
 package api
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"errors"
+	"fmt"
 	"github.com/beaquant/echo-vue/auth"
 	"github.com/beaquant/echo-vue/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
-	"gopkg.in/go-playground/validator.v8"
-	"time"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 // UserJSON - json data expected for login/signup
 type UserJSON struct {
-	Username string `json:"name" validate:"required"`
-	Password string `json:"email" validate:"required,email"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
+
 type CustomValidator struct {
 	Validator *validator.Validate
 }
@@ -28,27 +28,33 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 // UserSignup -
 func (api *API) UserSignup(c echo.Context) error {
+	fmt.Println("UserSignup")
 
-	//decoder := json.NewDecoder(req.Body)
-	//jsondata := UserJSON{}
-	//err := decoder.Decode(&jsondata)
-	//
-	//if err != nil || jsondata.Username == "" || jsondata.Password == "" {
-	//	http.Error(w, "Missing username or password", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//if api.users.HasUser(jsondata.Username) {
-	//	http.Error(w, "username already exists", http.StatusBadRequest)
-	//	return
-	//}
-	//
-	//user := api.users.AddUser(jsondata.Username, jsondata.Password)
-	//
-	//jsontoken := auth.GetJSONToken(user)
-	//
-	//w.Header().Set("Content-Type", "application/json")
-	//w.Write([]byte(jsontoken))
+	u := new(UserJSON)
+
+	if err := c.Bind(u); err != nil {
+		fmt.Println("c.Bind err :", err)
+		return err
+	}
+	if err := c.Validate(u); err != nil {
+		fmt.Println("c.Validate err :", err)
+		return err
+	}
+	fmt.Println("u :", u)
+
+	if u.Password == "" || u.Username == "" {
+		return c.JSON(http.StatusBadRequest, "Missing username or password")
+	}
+
+	if api.users.HasUser(u.Username) {
+		return c.JSON(http.StatusBadRequest, "username already exists")
+	}
+
+	user := api.users.AddUser(u.Username, u.Password)
+
+	jsontoken := auth.GetJSONToken(user)
+
+	return c.JSON(http.StatusOK, map[string]string{"id_token": jsontoken})
 }
 
 // UserLogin -
@@ -63,7 +69,7 @@ func (api *API) UserLogin(c echo.Context) error {
 	}
 
 	if u.Password == "" || u.Username == "" {
-		return c.JSON(http.StatusBadRequest, u)
+		return c.JSON(http.StatusBadRequest, "Missing username or password")
 	}
 	user := api.users.FindUser(u.Username)
 	if user.Username == "" {
@@ -75,40 +81,14 @@ func (api *API) UserLogin(c echo.Context) error {
 	}
 
 	jsontoken := auth.GetJSONToken(user)
-	return c.JSON(http.StatusOK, jsontoken)
-
-}
-func login(c echo.Context) error {
-	username := c.FormValue("username")
-	password := c.FormValue("password")
-
-	if username == "jon" && password == "shhh!" {
-		// Create token
-		token := jwt.New(jwt.SigningMethodHS256)
-
-		// Set claims
-		claims := token.Claims.(jwt.MapClaims)
-		claims["name"] = "Jon Snow"
-		claims["admin"] = true
-		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte("secret"))
-		if err != nil {
-			return err
-		}
-		return c.JSON(http.StatusOK, map[string]string{
-			"token": t,
-		})
-	}
-
-	return echo.ErrUnauthorized
+	return c.JSON(http.StatusOK, map[string]string{"id_token": jsontoken})
 }
 
-func accessible(c echo.Context) error {
+func (api *API) Accessible(c echo.Context) error {
 	return c.String(http.StatusOK, "Accessible")
 }
-func restricted(c echo.Context) error {
+
+func (api *API) Restricted(c echo.Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
 	name := claims["name"].(string)
@@ -116,17 +96,20 @@ func restricted(c echo.Context) error {
 }
 
 // GetUserFromContext - return User reference from header token
-func (api *API) GetUserFromContext(req *http.Request) *models.User {
-	userclaims := auth.GetUserClaimsFromContext(req)
+func (api *API) GetUserFromContext(c echo.Context) *models.User {
+	fmt.Println("GetUserFromContext")
+
+	userclaims := auth.GetUserClaimsFromContext(c)
 	user := api.users.FindUserByUUID(userclaims["uuid"].(string))
 	return user
 }
 
 // UserInfo - example to get
-func (api *API) UserInfo(w http.ResponseWriter, req *http.Request) {
+func (api *API) UserInfo(c echo.Context) error {
+	c.Request()
+	fmt.Println("UserInfo")
+	user := api.GetUserFromContext(c)
+	fmt.Println("user", user)
 
-	user := api.GetUserFromContext(req)
-	js, _ := json.Marshal(user)
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	return c.String(http.StatusOK, "Welcome "+user.Username+"!")
 }
